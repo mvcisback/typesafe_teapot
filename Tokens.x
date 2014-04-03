@@ -1,5 +1,5 @@
 {
-module Main (main) where
+module Tokens(alexScanTokens, Token(..)) where
 }
 
 %wrapper "basic"
@@ -21,7 +21,7 @@ $hexit       = [$digit A-F a-f]
              | 0[oO] @octal
              | 0[xX] @hexadecimal
 
-@id = [A-Za-z][A-Za-z0-9]
+@id = [A-Za-z][A-Za-z0-9]*
 
 $vert = v
 $face = f
@@ -30,25 +30,21 @@ tokens :-
 
   $white+				;
   "#".*			        	;
-  @sign? @number			{ \s -> Float (read s) }
-  v	                		{ \s -> Vert }
-  f                     		{ \s -> Face }
-  g                                     { \s -> Geometric }
-  @id                                   { \s -> Id s }
+  @sign? @number			{ \s -> FloatToken (read s) }
+  v	                		{ \s -> VertToken }
+  f                     		{ \s -> FaceToken }
+  g                                     { \s -> GeometricToken }
+  @id                                   { \s -> IdToken s }
 
 {
 -- Each action has type :: String -> Token
 
 -- The token type:
 data Token =
-        Vert |
-        Face |
-        Geometric |
-        Id String |
-	Float Float
+        VertToken |
+        FaceToken |
+        GeometricToken |
+        IdToken String |
+	FloatToken Float
 	deriving (Eq,Show)
-
-main = do
-  s <- getContents
-  print (alexScanTokens s)
 }
