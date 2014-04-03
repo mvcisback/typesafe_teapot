@@ -16,8 +16,8 @@ import Tokens
 
 %%
 
-Link   : Exp Link                       { Node $1 $2 }
-       | Exp                            { Node $1 Empty }
+Link   : Exp Link                       { $1:$2 }
+       | Exp                            { [$1] }
 
 Exp     : vert float float float        { Vertex $2 $3 $4 }
         | face float float float        { Face $2 $3 $4 }
