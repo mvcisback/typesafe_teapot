@@ -1,5 +1,5 @@
 {
-module Main where
+module Parser(parse, Exp(..)) where
 import Tokens
 }
 
@@ -37,4 +37,6 @@ data Exp
      | Face Float Float Float
      | Geo String
      deriving (Eq, Show)
+
+parse = obj . alexScanTokens
 }
