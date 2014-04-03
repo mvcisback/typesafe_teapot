@@ -20,6 +20,9 @@ $hexit       = [$digit A-F a-f]
              | @decimal @exponent
              | 0[oO] @octal
              | 0[xX] @hexadecimal
+
+@id = [A-Za-z][A-Za-z0-9]
+
 $vert = v
 $face = f
 
@@ -30,6 +33,8 @@ tokens :-
   @sign? @number			{ \s -> Float (read s) }
   v	                		{ \s -> Vert }
   f                     		{ \s -> Face }
+  g                                     { \s -> Geometric }
+  @id                                   { \s -> Id s }
 
 {
 -- Each action has type :: String -> Token
@@ -38,6 +43,8 @@ tokens :-
 data Token =
         Vert |
         Face |
+        Geometric |
+        Id String |
 	Float Float
 	deriving (Eq,Show)
 
