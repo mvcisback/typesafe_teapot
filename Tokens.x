@@ -1,5 +1,5 @@
 {
-module Tokens(alexScanTokens, Token(..)) where
+  module Tokens(alexScanTokens, Token(..)) where
 }
 
 %wrapper "basic"
@@ -16,11 +16,11 @@ $sep         = \/
 @hexadecimal = $hexit+
 @exponent    = [eE] [\-\+]? @decimal
 
-@index       = @decimal
+@int         = @decimal
              | 0[oO] @octal
              | 0[xX] @hexadecimal
 
-@number      = @index
+@number      = @int
              | @decimal \. @decimal @exponent?
              | @decimal @exponent
 
@@ -31,10 +31,9 @@ $vert = v
 $face = f
 
 tokens :-
-
   $white+				;
   "#".*			        	;
-  @index                                { \s -> IndexToken ((read s) - 1) }
+  @int                                  { \s -> IntToken (read s) }
   @sign? @number			{ \s -> FloatToken (read s) }
   v	                		{ \s -> VertToken }
   f                     		{ \s -> FaceToken }
@@ -59,7 +58,7 @@ data Token =
         GroupToken |
         IdToken String |
 	FloatToken Float |
-        IndexToken Int |
+        IntToken Int |
         NormalToken |
         TextureToken | 
         ParameterToken |

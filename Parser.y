@@ -13,7 +13,7 @@ import Tokens
         geo     { GroupToken }
         id      { IdToken $$ }
         float   { FloatToken $$ }
-        index   { IndexToken $$ }
+        int     { IntToken $$ }
 
 %%
 
@@ -21,7 +21,10 @@ Link   : Exp Link                       { $1:$2 }
        | Exp                            { [$1] }
 
 Exp     : vert float float float        { Vertex $2 $3 $4 }
-        | face index index index        { Face $2 $3 $4 }
+        | vert float float int          { Vertex $2 $3 (fromIntegral $4) }
+        | vert float int float          { Vertex $2 (fromIntegral $3) $4 }
+        | vert int float float          { Vertex (fromIntegral $2) $3 $4 }
+        | face int int int              { Face $2 $3 $4 }
         | geo id                        { Geo $2}
 
 {
