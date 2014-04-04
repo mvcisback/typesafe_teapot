@@ -10,9 +10,10 @@ import Tokens
 %token
         vert    { VertToken }
         face    { FaceToken }
-        geo     { GeometricToken }
+        geo     { GroupToken }
         id      { IdToken $$ }
         float   { FloatToken $$ }
+        index   { IndexToken $$ }
 
 %%
 
@@ -20,7 +21,7 @@ Link   : Exp Link                       { $1:$2 }
        | Exp                            { [$1] }
 
 Exp     : vert float float float        { Vertex $2 $3 $4 }
-        | face float float float        { Face $2 $3 $4 }
+        | face index index index        { Face $2 $3 $4 }
         | geo id                        { Geo $2}
 
 {
@@ -34,7 +35,7 @@ data Link
 
 data Exp
      = Vertex Float Float Float
-     | Face Float Float Float
+     | Face Int Int Int
      | Geo String
      deriving (Eq, Show)
 
