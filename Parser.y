@@ -28,7 +28,7 @@ Exp     : vert float float float        { Vertex $2 $3 $4 }
         | vert int float int            { Vertex (fromIntegral $2) $3 (fromIntegral $4) }    
         | vert int int float            { Vertex (fromIntegral $2) (fromIntegral $3) $4 }
         | vert int int int              { Vertex (fromIntegral $2) (fromIntegral $3) (fromIntegral $4) }
-        | face int int int              { Face $2 $3 $4 }
+        | face int int int              { Face ($2 - 1) ($3 - 1) ($4 - 1) }
         | geo id                        { Geo $2}
 
 {
