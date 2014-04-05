@@ -7,6 +7,7 @@ import Data.Vec.Nat
 import Data.Monoid
 import Data.IORef
 import Control.Applicative
+import Obj
 import Graphics.UI.GLUT
     (Window,
     mainLoop,
