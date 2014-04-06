@@ -21,3 +21,5 @@ computeNormal :: (Vec3 Float, Vec3 Float, Vec3 Float) -> Vec3 Float
 computeNormal (v1, v2, v3) = normalize $ v3-v2 `cross` v2-v1
 
 computeNormals = map computeNormal
+
+fromObj = toTriangles . processObj . parse

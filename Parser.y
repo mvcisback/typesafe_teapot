@@ -5,6 +5,7 @@ import Tokens
 
 %name obj
 %tokentype { Token }
+%monad { E } { thenE } { returnE }
 %error { parseError }
 
 %token
@@ -32,16 +33,37 @@ Exp     : vert float float float        { Vertex $2 $3 $4 }
         | geo id                        { Geo $2 }
 
 {
-parseError :: [Token] -> a
-parseError (h:h2:h3:h4:h5:h6:t) = error $ "Parse error " ++ (show (h, h2, h3, h4, h5, h6))
-parseError _ = error "Parse error"               
+
+parseError tokens = failE "Parse error"
 
 data Exp
      = Vertex Float Float Float
      | Face Int Int Int
      | Geo String
-     deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
      
 parse = obj . alexScanTokens
+
+data E a = Ok a | Failed String
+  deriving (Eq, Show, Ord)
+
+thenE :: E a -> (a -> E b) -> E b
+m `thenE` k = 
+   case m of 
+       Ok a -> k a
+       Failed e -> Failed e
+
+returnE :: a -> E a
+returnE a = Ok a
+
+failE :: String -> E a
+failE err = Failed err
+
+catchE :: E a -> (String -> E a) -> E a
+catchE m k = 
+   case m of
+      Ok a -> Ok a
+      Failed e -> k e
+
 }
