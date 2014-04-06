@@ -21,14 +21,14 @@ main = do
   getArgsAndInitialize
   tex <- loadTexture RGB8 "myPicture.jpg"
   angleRef <- newIORef 0.0
-  newWindow "Spinning box" (100:.100:.()) (800:.600:.()) (renderFrame tex angleRef) initWindow
+  newWindow "Spinning box" (100:.100:.()) (800:.600:.()) (renderFrame tex angleRef cube) initWindow
   mainLoop       
 
-renderFrame :: Texture2D RGBFormat -> IORef Float -> Vec2 Int -> IO (FrameBuffer RGBFormat () ())
-renderFrame tex angleRef size = do
+renderFrame :: Texture2D RGBFormat -> IORef Float -> TriangleStream3 -> Vec2 Int -> IO (FrameBuffer RGBFormat () ())
+renderFrame tex angleRef obj size = do
     angle <- readIORef angleRef
     writeIORef angleRef ((angle + 0.005) `mod'` (2*pi))
-    return $ objFrameBuffer tex angle size cube
+    return $ objFrameBuffer tex angle size obj
 
 initWindow :: Window -> IO ()
 initWindow win = idleCallback $= Just (postRedisplay (Just win))
