@@ -7,6 +7,7 @@ import Data.Vec.Nat
 import Data.Monoid
 import Data.IORef
 import Control.Applicative
+import Control.Monad
 import Obj
 import Graphics.UI.GLUT
     (Window,
@@ -25,10 +26,9 @@ main = do
   mainLoop       
 
 renderFrame :: Texture2D RGBFormat -> IORef Float -> TriangleStream3 -> Vec2 Int -> IO (FrameBuffer RGBFormat () ())
-renderFrame tex angleRef obj size = do
-    angle <- readIORef angleRef
-    writeIORef angleRef ((angle + 0.005) `mod'` (2*pi))
-    return $ objFrameBuffer tex angle size obj
+renderFrame tex angleRef obj size = readIORef angleRef >>= nextFrame
+    where nextFrame angle = writeIORef angleRef ((angle + 0.005) `mod'` (2*pi))
+                            >> (return $ objFrameBuffer tex angle size obj)
 
 initWindow :: Window -> IO ()
 initWindow win = idleCallback $= Just (postRedisplay (Just win))
