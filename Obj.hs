@@ -13,7 +13,7 @@ toTriangles verts = map getCoords
 computeNormal :: (Vec3 Float, Vec3 Float, Vec3 Float) -> Vec3 Float
 computeNormal (v1, v2, v3) = normalize $ (v2-v1) `cross` (v3-v2)
 
-computeNormals = concat . (map (replicate 3 . computeNormal))
+computeNormals = concatMap (replicate 3 . computeNormal)
 
 flatten = foldr (\(a1,a2,a3) as -> a1:a2:a3:as) []
 
