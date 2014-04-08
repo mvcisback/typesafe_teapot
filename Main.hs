@@ -9,6 +9,7 @@ import Data.IORef
 import Control.Applicative
 import Control.Monad
 import Obj
+import System.IO    
 import Graphics.UI.GLUT
     (Window,
     mainLoop,
@@ -22,7 +23,7 @@ main = do
   getArgsAndInitialize
   tex <- loadTexture RGB8 "myPicture.jpg"
   angleRef <- newIORef 0.0
-  cubeObj <- readFile "teapot_0.obj"
+  cubeObj <- getContents
   let Left cube = objToGPU cubeObj
   let cube' = (toGPUStream TriangleList cube)
   newWindow "Spinning box" (100:.100:.()) (800:.600:.()) (renderFrame tex angleRef cube') initWindow
