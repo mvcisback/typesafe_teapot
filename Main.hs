@@ -28,15 +28,14 @@ main = do
   tex <- loadTexture RGB8 "myPicture.jpg"
   angleRef <- newIORef 0.0
   cubeObj <- getContents
-  cube <- getCube cubeObj
+  cube <- (getCube . objToGPU) cubeObj
   let cube' = toGPUStream TriangleList cube
   newWindow "Spinning box" (100:.100:.()) (800:.600:.()) 
        (renderFrame tex angleRef cube')
        initWindow
   mainLoop
-      where getCube cubeObj = case objToGPU cubeObj of
-                        Left cube -> return cube
-                        Right s -> print s >> exitFailure
+      where getCube (Left cube) = return cube
+            getCube (Right s) = print s >> exitFailure
 
 renderFrame :: Texture2D RGBFormat -> IORef Float -> TriangleStream3 -> Vec2 Int -> IO (FrameBuffer RGBFormat () ())
 renderFrame tex angleRef obj size = readIORef angleRef >>= nextFrame
