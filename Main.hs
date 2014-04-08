@@ -27,8 +27,7 @@ main = do
   getArgsAndInitialize
   tex <- loadTexture RGB8 "myPicture.jpg"
   angleRef <- newIORef 0.0
-  objStr <- getContents
-  obj <- (getObj . objToGPU) objStr
+  obj <- getContents >>= (getObj . objToGPU)
   newWindow "Spinning box" (100:.100:.()) (800:.600:.()) 
        (renderFrame tex angleRef obj)
        initWindow
