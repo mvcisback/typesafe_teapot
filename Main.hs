@@ -22,11 +22,11 @@ main = do
   getArgsAndInitialize
   tex <- loadTexture RGB8 "myPicture.jpg"
   angleRef <- newIORef 0.0
-  cubeObj <- readFile "cube_out.obj"
+  cubeObj <- readFile "teapot_0.obj"
   let Left cube = objToGPU cubeObj
   let cube' = (toGPUStream TriangleList cube)
   newWindow "Spinning box" (100:.100:.()) (800:.600:.()) (renderFrame tex angleRef cube') initWindow
-  mainLoop       
+  mainLoop
 
 renderFrame :: Texture2D RGBFormat -> IORef Float -> TriangleStream3 -> Vec2 Int -> IO (FrameBuffer RGBFormat () ())
 renderFrame tex angleRef obj size = readIORef angleRef >>= nextFrame
@@ -57,7 +57,7 @@ enlight tex (norm, uv) = RGB (c * Vec.vec (norm `dot` toGPU (0:.0:.1:.())))
 transform angle (width:.height:.()) (pos, norm, uv) = (transformedPos, (transformedNorm, uv))
     where
         modelMat = rotationVec (normalize (1:.0.5:.0.3:.())) angle `multmm` translation (-0.5)
-        viewMat = translation (-(0:.0:.2:.())) 
+        viewMat = translation (-(0:.0:.5:.()))
         projMat = perspective 1 100 (pi/3) (fromIntegral width / fromIntegral height)
         viewProjMat = projMat `multmm` viewMat
         transformedPos = toGPU (viewProjMat `multmm` modelMat) `multmv` (homPoint pos :: Vec4 (Vertex Float))
