@@ -21,6 +21,6 @@ objToGPU s = case parse s of
                   where normal2Vec (Normal a b c) = a:.b:.c:.()
                         texture2Vec (Texture a b) = a:.b:.()
                         vs' = toTriangles vs fs
-                        ns' = map (normal2Vec) ns
-                        ts' = map (texture2Vec) ts
+                        ns' = map normal2Vec ns
+                        ts' = map texture2Vec ts
               Failed s -> Right s
