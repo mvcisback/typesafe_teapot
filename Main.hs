@@ -10,6 +10,7 @@ import Control.Applicative
 import Control.Monad
 import Obj
 import System.IO    
+import System.Exit    
 import Graphics.UI.GLUT
     (Window,
     mainLoop,
@@ -27,12 +28,15 @@ main = do
   tex <- loadTexture RGB8 "myPicture.jpg"
   angleRef <- newIORef 0.0
   cubeObj <- getContents
-  let Left cube = objToGPU cubeObj
+  cube <- getCube cubeObj
   let cube' = toGPUStream TriangleList cube
   newWindow "Spinning box" (100:.100:.()) (800:.600:.()) 
        (renderFrame tex angleRef cube')
        initWindow
   mainLoop
+      where getCube cubeObj = case objToGPU cubeObj of
+                        Left cube -> return cube
+                        Right s -> print s >> exitFailure
 
 renderFrame :: Texture2D RGBFormat -> IORef Float -> TriangleStream3 -> Vec2 Int -> IO (FrameBuffer RGBFormat () ())
 renderFrame tex angleRef obj size = readIORef angleRef >>= nextFrame
@@ -44,13 +48,10 @@ initWindow win = idleCallback $= Just (postRedisplay (Just win))
 transformedObj :: Float -> Vec2 Int -> TriangleStream3 -> TriangleStream4
 transformedObj angle size = fmap (transform angle size)
 
-rasterizedObj :: Float -> Vec2 Int -> TriangleStream3 -> FragmentStream (Vec3 (Fragment Float), Vec2 (Fragment Float))
 rasterizedObj angle size = rasterizeFront . transformedObj angle size
 
-litObj :: Texture2D RGBFormat -> Float -> Vec2 Int -> TriangleStream3 -> FragmentStream (Color RGBFormat (Fragment Float))
 litObj tex angle size obj = enlight tex <$> rasterizedObj angle size obj
 
-objFrameBuffer :: Texture2D RGBFormat -> Float -> Vec2 Int -> TriangleStream3 -> FrameBuffer RGBFormat () ()
 objFrameBuffer tex angle size obj = paintSolid (litObj tex angle size obj) emptyFrameBuffer
 
 enlight tex (norm, uv) = RGB (c * Vec.vec (norm `dot` toGPU (0:.0:.1:.())))
