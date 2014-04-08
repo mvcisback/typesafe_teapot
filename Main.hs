@@ -18,6 +18,9 @@ import Graphics.UI.GLUT
     getArgsAndInitialize,
     ($=))
 
+type TriangleStream3 = PrimitiveStream Triangle (Vec3 (Vertex Float), Vec3 (Vertex Float), Vec2 (Vertex Float))
+type TriangleStream4 = PrimitiveStream Triangle (Vec4 (Vertex Float), (Vec3 (Vertex Float), Vec2 (Vertex Float)))
+
 main :: IO ()
 main = do
   getArgsAndInitialize
@@ -26,19 +29,17 @@ main = do
   cubeObj <- getContents
   let Left cube = objToGPU cubeObj
   let cube' = toGPUStream TriangleList cube
-  newWindow "Spinning box" (100:.100:.()) (800:.600:.()) (renderFrame tex angleRef cube') initWindow
+  newWindow "Spinning box" (100:.100:.()) (800:.600:.()) 
+       (renderFrame tex angleRef cube')
+       initWindow
   mainLoop
 
 renderFrame :: Texture2D RGBFormat -> IORef Float -> TriangleStream3 -> Vec2 Int -> IO (FrameBuffer RGBFormat () ())
 renderFrame tex angleRef obj size = readIORef angleRef >>= nextFrame
     where nextFrame angle = writeIORef angleRef ((angle + 0.005) `mod'` (2*pi))
-                            >> return objFrameBuffer tex angle size obj
-
+                            >> return (objFrameBuffer tex angle size obj)
 initWindow :: Window -> IO ()
 initWindow win = idleCallback $= Just (postRedisplay (Just win))
-
-type TriangleStream3 = PrimitiveStream Triangle (Vec3 (Vertex Float), Vec3 (Vertex Float), Vec2 (Vertex Float))
-type TriangleStream4 = PrimitiveStream Triangle (Vec4 (Vertex Float), (Vec3 (Vertex Float), Vec2 (Vertex Float)))
 
 transformedObj :: Float -> Vec2 Int -> TriangleStream3 -> TriangleStream4
 transformedObj angle size = fmap (transform angle size)
