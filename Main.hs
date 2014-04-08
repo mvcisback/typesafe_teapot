@@ -25,14 +25,14 @@ main = do
   angleRef <- newIORef 0.0
   cubeObj <- getContents
   let Left cube = objToGPU cubeObj
-  let cube' = (toGPUStream TriangleList cube)
+  let cube' = toGPUStream TriangleList cube
   newWindow "Spinning box" (100:.100:.()) (800:.600:.()) (renderFrame tex angleRef cube') initWindow
   mainLoop
 
 renderFrame :: Texture2D RGBFormat -> IORef Float -> TriangleStream3 -> Vec2 Int -> IO (FrameBuffer RGBFormat () ())
 renderFrame tex angleRef obj size = readIORef angleRef >>= nextFrame
     where nextFrame angle = writeIORef angleRef ((angle + 0.005) `mod'` (2*pi))
-                            >> (return $ objFrameBuffer tex angle size obj)
+                            >> return objFrameBuffer tex angle size obj
 
 initWindow :: Window -> IO ()
 initWindow win = idleCallback $= Just (postRedisplay (Just win))
@@ -44,7 +44,7 @@ transformedObj :: Float -> Vec2 Int -> TriangleStream3 -> TriangleStream4
 transformedObj angle size = fmap (transform angle size)
 
 rasterizedObj :: Float -> Vec2 Int -> TriangleStream3 -> FragmentStream (Vec3 (Fragment Float), Vec2 (Fragment Float))
-rasterizedObj angle size = rasterizeFront . (transformedObj angle size)
+rasterizedObj angle size = rasterizeFront . transformedObj angle size
 
 litObj :: Texture2D RGBFormat -> Float -> Vec2 Int -> TriangleStream3 -> FragmentStream (Color RGBFormat (Fragment Float))
 litObj tex angle size obj = enlight tex <$> rasterizedObj angle size obj
