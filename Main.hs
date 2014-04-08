@@ -22,7 +22,10 @@ main = do
   getArgsAndInitialize
   tex <- loadTexture RGB8 "myPicture.jpg"
   angleRef <- newIORef 0.0
-  newWindow "Spinning box" (100:.100:.()) (800:.600:.()) (renderFrame tex angleRef cube) initWindow
+  cubeObj <- readFile "cube_out.obj"
+  let Left cube = objToGPU cubeObj
+  let cube' = (toGPUStream TriangleList cube)
+  newWindow "Spinning box" (100:.100:.()) (800:.600:.()) (renderFrame tex angleRef cube') initWindow
   mainLoop       
 
 renderFrame :: Texture2D RGBFormat -> IORef Float -> TriangleStream3 -> Vec2 Int -> IO (FrameBuffer RGBFormat () ())
@@ -62,14 +65,3 @@ transform angle (width:.height:.()) (pos, norm, uv) = (transformedPos, (transfor
 
 paintSolid = paintColor NoBlending (RGB $ Vec.vec True)
 emptyFrameBuffer = newFrameBufferColor (RGB 0)
-
-
-uvCoords = [0:.0:.(), 0:.1:.(), 1:.0:.(), 1:.1:.()]
-sidePosX = toGPUStream TriangleStrip $ zip3 [1:.0:.0:.(), 1:.1:.0:.(), 1:.0:.1:.(), 1:.1:.1:.()] (repeat (1:.0:.0:.()))    uvCoords
-sideNegX = toGPUStream TriangleStrip $ zip3 [0:.0:.1:.(), 0:.1:.1:.(), 0:.0:.0:.(), 0:.1:.0:.()] (repeat ((-1):.0:.0:.())) uvCoords
-sidePosY = toGPUStream TriangleStrip $ zip3 [0:.1:.1:.(), 1:.1:.1:.(), 0:.1:.0:.(), 1:.1:.0:.()] (repeat (0:.1:.0:.()))    uvCoords
-sideNegY = toGPUStream TriangleStrip $ zip3 [0:.0:.0:.(), 1:.0:.0:.(), 0:.0:.1:.(), 1:.0:.1:.()] (repeat (0:.(-1):.0:.())) uvCoords
-sidePosZ = toGPUStream TriangleStrip $ zip3 [1:.0:.1:.(), 1:.1:.1:.(), 0:.0:.1:.(), 0:.1:.1:.()] (repeat (0:.0:.1:.()))    uvCoords
-sideNegZ = toGPUStream TriangleStrip $ zip3 [0:.0:.0:.(), 0:.1:.0:.(), 1:.0:.0:.(), 1:.1:.0:.()] (repeat (0:.0:.(-1):.())) uvCoords
-
-cube = mconcat [sidePosX, sideNegX, sidePosY, sideNegY, sidePosZ, sideNegZ]

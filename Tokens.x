@@ -26,6 +26,7 @@ $sep         = \/
 
 
 @id = [A-Za-z][A-Za-z0-9]*
+@file = @id \. @id
 
 $vert = v
 $face = f
@@ -37,16 +38,17 @@ tokens :-
   @sign? @number			{ \s -> FloatToken (read s) }
   v	                		{ \s -> VertToken }
   f                     		{ \s -> FaceToken }
-  g                                     { \s -> GroupToken }
-  o                                     { \s -> ObjectToken }
-  s                                     { \s -> SmoothToken }
+  g                                     ;
+  o                                     ;
+  s                                     ;
   vt                                    { \s -> TextureToken }
   vn                                    { \s -> NormalToken }
   vp                                    { \s -> ParameterToken }
-  mtllib                                { \s -> MatlibToken }
-  usemtl                                { \s -> UseMatToken }
-  @id                                   { \s -> IdToken s }
-  $sep                                  { \s -> SepToken }
+  mtllib                                ;
+  usemtl                                ;
+  @id                                   ;
+  $sep                                  ;
+  @file                                 ;
 
 {
 -- Each action has type :: String -> Token
