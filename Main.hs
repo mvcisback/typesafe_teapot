@@ -35,7 +35,7 @@ main = do
       where getObj (Left obj) = return $ toGPUStream TriangleList obj
             getObj (Right s) = print s >> exitFailure
 
-renderFrame :: Texture2D RGBFormat -> IORef Float -> TriangleStream3 -> Vec2 Int -> IO (FrameBuffer RGBFormat () ())
+renderFrame :: Texture2D RGBFormat -> IORef Float -> TriangleStream3 -> Vec2 Int -> IO (FrameBuffer RGBFormat DepthFormat ())
 renderFrame tex angleRef obj size = readIORef angleRef >>= nextFrame
     where nextFrame angle = writeIORef angleRef ((angle + 0.005) `mod'` (2*pi))
                             >> return (objFrameBuffer tex angle size obj)
@@ -63,5 +63,5 @@ transform angle (width:.height:.()) (pos, norm, uv) = (transformedPos, (transfor
         transformedPos = toGPU (viewProjMat `multmm` modelMat) `multmv` (homPoint pos :: Vec4 (Vertex Float))
         transformedNorm = toGPU (Vec.map (Vec.take n3) $ Vec.take n3 modelMat) `multmv` norm
 
-paintSolid = paintColor NoBlending (RGB $ Vec.vec True)
-emptyFrameBuffer = newFrameBufferColor (RGB 0)
+paintSolid = paintColorRastDepth Lequal True NoBlending (RGB $ Vec.vec True)
+emptyFrameBuffer = newFrameBufferColorDepth (RGB 0) 32
