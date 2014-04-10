@@ -43,7 +43,7 @@ initWindow :: Window -> IO ()
 initWindow win = idleCallback $= Just (postRedisplay (Just win))
 
 transformedObj :: Float -> Vec2 Int -> TriangleStream3 -> TriangleStream4
-transformedObj angle size = fmap (transform angle size)
+transformedObj angle size = fmap $ transform angle size
 
 rasterizedObj angle size = rasterizeFront . transformedObj angle size
 

@@ -41,6 +41,7 @@ Norm1   : norm Num Num Num              { Normal $2 $3 $4 }
 Tex1    : tex Num Num                   { Texture $2 $3 }
 Face1   : face Point Point Point        { Face $2 $3 $4 }
 Point   : Index sep Index sep Index     { ($1, Just $3, Just $5) }
+        | Index sep sep Index           { ($1, Nothing, Just $4) }
         | Index                         { ($1, Nothing, Nothing)}
 Index   : int                           { $1 - 1 }
 

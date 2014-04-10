@@ -34,7 +34,7 @@ insertFace f (f1,_,_) m = M.insert f1 new m
 
 mapCoords (vs, ts, ns, fs) = map toCoord indexes
     where indexes = concatMap (\(Face f1 f2 f3) -> [f1,f2,f3]) fs
-          toCoord (vertI,normI,texI) = (getVert vs vertI,getNormal vertI normI,getTexture vertI texI)
+          toCoord (vertI,texI,normI) = (getVert vs vertI,getNormal vertI normI,getTexture vertI texI)
           getNormal _ (Just i) = getNorm ns i
           getNormal i _ = fromMaybe (0:.0:.0:.()) $ M.lookup i normals
           getTexture _ (Just i) = getTex ts i
