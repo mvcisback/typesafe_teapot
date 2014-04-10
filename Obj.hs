@@ -1,4 +1,4 @@
-module Obj where
+module Obj(objToGPU) where
 
 import Parser
 import Graphics.GPipe
