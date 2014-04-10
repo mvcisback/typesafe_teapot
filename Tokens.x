@@ -9,6 +9,7 @@ $digit       = 0-9
 $octit       = 0-7
 $hexit       = [$digit A-F a-f]
 $sep         = \/
+$newline = [\n]
 
 @sign        = [\-\+]
 @decimal     = $digit+

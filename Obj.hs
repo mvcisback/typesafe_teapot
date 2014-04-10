@@ -8,7 +8,7 @@ import Data.List
 import Data.Maybe (fromMaybe)
 import qualified Data.Map as M
 
-getCoords verts (Face f1 f2 f3) = (getVert' f1, getVert' f2, getVert' f3)
+getCoords verts (Face (f1,_,_) (f2,_,_) (f3,_,_)) = (getVert' f1, getVert' f2, getVert' f3)
     where getVert' = getVert verts
 getVert verts f = let (Vertex v1 v2 v3) =  verts !! f in v1:.v2:.v3:.()
 
@@ -25,20 +25,19 @@ facesToNormal verts faces = weight * total
 mapNormals verts faces = M.map (facesToNormal verts) (mapFaces faces)
 mapFaces = foldr mapFace M.empty
 mapFace f@(Face f1 f2 f3) m = Data.List.foldr (insertFace f) m [f1,f2,f3]
-insertFace f f1 m = M.insert f1 new m
+insertFace f (f1,_,_) m = M.insert f1 new m
     where new = case M.lookup f1 m of
                   Just old -> f:old
                   Nothing -> [f]
 
-mapCoords vs fs = map toCoord indexes
+mapCoords (vs, [], [], fs) = map toCoord indexes
     where indexes = concatMap (\(Face f1 f2 f3) -> [f1,f2,f3]) fs
-          toCoord i = (getVert vs i,getNormal i,0:.0:.())
+          toCoord (i,_,_) = (getVert vs i,getNormal i,0:.0:.())
           getNormal i = fromMaybe (0:.0:.0:.()) $ M.lookup i normals
           normals = mapNormals vs fs
 
 flatten = foldr (\(a1,a2,a3) as -> a1:a2:a3:as) []
 objToGPU:: String -> Either [CPU (Vec3 (G.Vertex Float), Vec3 (G.Vertex Float), Vec2 (G.Vertex Float))] String
 objToGPU s = case parse s of 
-              Ok (UnProcessed vs fs) -> Left $ mapCoords vs fs
-              Ok _ -> undefined
+              Ok p -> Left $ mapCoords p
               Failed s -> Right s
