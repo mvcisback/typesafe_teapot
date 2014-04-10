@@ -47,7 +47,7 @@ tokens :-
   mtllib                                ;
   usemtl                                ;
   @id                                   ;
-  $sep                                  ;
+  $sep                                  { \s -> SepToken }
   @file                                 ;
 
 {

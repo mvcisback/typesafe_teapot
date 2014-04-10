@@ -39,6 +39,6 @@ mapCoords vs fs = map toCoord indexes
 flatten = foldr (\(a1,a2,a3) as -> a1:a2:a3:as) []
 objToGPU:: String -> Either [CPU (Vec3 (G.Vertex Float), Vec3 (G.Vertex Float), Vec2 (G.Vertex Float))] String
 objToGPU s = case parse s of 
-              Ok (vs, [], [], fs) -> Left $ mapCoords vs fs
+              Ok (UnProcessed vs fs) -> Left $ mapCoords vs fs
               Ok _ -> undefined
               Failed s -> Right s
