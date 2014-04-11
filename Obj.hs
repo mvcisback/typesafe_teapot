@@ -37,8 +37,10 @@ mapCoords (vs, ts, ns, fs) = map toCoord indexes
           getTexture i _ = 0:.0:.()
           normals = mapNormals vs fs
 
-flatten = foldr (\(a1,a2,a3) as -> a1:a2:a3:as) []
-objToGPU:: String -> Either [CPU (Vec3 (G.Vertex Float), Vec3 (G.Vertex Float), Vec2 (G.Vertex Float))] String
+type GVertex = Vec3 (G.Vertex Float)
+type GFace = Vec3 (G.Vertex Float)
+type GTexture = Vec2 (G.Vertex Float)
+objToGPU:: String -> Either [CPU (GVertex, GFace, GTexture)] String
 objToGPU s = case parse s of
               Ok p -> Left $ mapCoords p
               Failed s -> Right s
