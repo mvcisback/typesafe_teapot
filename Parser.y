@@ -1,6 +1,7 @@
 {
-module Parser(parse, Vertex(..), Face(..), Normal(..), Texture(..), E(..)) where
+module Parser(parse, Face(..), E(..)) where
 import Tokens
+import Data.Vec
 }
 
 %name obj
@@ -36,9 +37,9 @@ Norm   : Norm1 Norm                     { $1:$2 }
 Num     : float                         { $1 }
         | int                           { fromIntegral $1 }
 
-Vert1   : vert Num Num Num              { Vertex $2 $3 $4 }
-Norm1   : norm Num Num Num              { Normal $2 $3 $4 }
-Tex1    : tex Num Num                   { Texture $2 $3 }
+Vert1   : vert Num Num Num              { $2:.$3:.$4:.() }
+Norm1   : norm Num Num Num              { $2:.$3:.$4:.() }
+Tex1    : tex Num Num                   { $2:.$3:.() }
 Face1   : face Point Point Point        { Face $2 $3 $4 }
 Point   : Index sep Index sep Index     { ($1, Just $3, Just $5) }
         | Index sep sep Index           { ($1, Nothing, Just $4) }
@@ -49,15 +50,14 @@ Index   : int                           { $1 - 1 }
 
 parseError tokens = failE $ "Parse error" ++ (show tokens)
 
-data Vertex = Vertex Float Float Float
+type Coord = (Int, Maybe Int, Maybe Int)
+data Face = Face Coord Coord Coord
   deriving (Eq, Show, Ord)
-data Face = Face (Int, Maybe Int, Maybe Int) (Int, Maybe Int, Maybe Int) (Int, Maybe Int, Maybe Int)
-  deriving (Eq, Show, Ord)
-data Normal = Normal Float Float Float
-  deriving (Eq, Show, Ord)
-data Texture = Texture Float Float
-  deriving (Eq, Show, Ord)
-     
+
+type Normal = Vec3 Float
+type Vertex = Vec3 Float
+type Texture = Vec2 Float
+parse :: String -> E ([Vec3 Float], [Vec2 Float], [Vec3 Float], [Face])
 parse = obj . alexScanTokens
 
 data E a = Ok a | Failed String
