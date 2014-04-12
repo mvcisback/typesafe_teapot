@@ -51,8 +51,15 @@ litObj tex angle size obj = enlight tex <$> rasterizedObj angle size obj
 
 objFrameBuffer tex angle size obj = paintSolid (litObj tex angle size obj) emptyFrameBuffer
 
-enlight tex (norm, uv) = RGB (c * Vec.vec (norm `dot` toGPU (0:.0:.1:.())))
+enlight tex (norm, uv) = RGB $ c * Vec.vec (ambient + specular + diffuse)
     where RGB c = sample (Sampler Linear Wrap) tex uv
+          light = toGPU 0:.0:.1:.()
+          view = toGPU 0:.0:.1:.()
+          diffuse = norm `dot` light
+          ambient = toGPU 0.1
+          specular = (view `dot` r) ** n
+              where r = (Vec.vec (2* (norm `dot` light))) * norm - light
+                    n = 10
 
 transform angle (width:.height:.()) (pos, norm, uv) = (transformedPos, (transformedNorm, uv))
     where

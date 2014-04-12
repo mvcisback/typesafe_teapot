@@ -1,5 +1,5 @@
 {
-module Parser(parse, Face(..), E(..)) where
+module Parser(parse, Coord(..), Face, E(..)) where
 import Tokens
 import Data.Vec
 }
@@ -40,10 +40,13 @@ Num     : float                         { $1 }
 Vert1   : vert Num Num Num              { $2:.$3:.$4:.() }
 Norm1   : norm Num Num Num              { $2:.$3:.$4:.() }
 Tex1    : tex Num Num                   { $2:.$3:.() }
-Face1   : face Point Point Point        { ($2,$3,$4) }
+Face1   : face Point Point Point Face2  { ($2,$3,$4,$5) }
+        | face Point Point Point        { ($2,$3,$4,[]) }
+Face2   : Point Face2                   { $1:$2 }
+        | Point                         { [$1] }
 Point   : Index sep Index sep Index     { ($1, Just $3, Just $5) }
         | Index sep sep Index           { ($1, Nothing, Just $4) }
-        | Index                         { ($1, Nothing, Nothing)}
+        | Index                         { ($1, Nothing, Nothing) }
 Index   : int                           { $1 - 1 }
 
 {
@@ -51,7 +54,7 @@ Index   : int                           { $1 - 1 }
 parseError tokens = failE $ "Parse error" ++ (show tokens)
 
 type Coord = (Int, Maybe Int, Maybe Int)
-type Face = (Coord,Coord,Coord)
+type Face = (Coord,Coord,Coord,[Coord])
 type Normal = Vec3 Float
 type Vertex = Vec3 Float
 type Texture = Vec2 Float

@@ -4,6 +4,7 @@ import Parser
 import Graphics.GPipe
 import qualified Graphics.GPipe as G
 import Data.Vec.LinAlg
+import qualified Data.Vec as V
 import Data.List
 import Data.Maybe (fromMaybe)
 import qualified Data.Map as M
@@ -28,19 +29,28 @@ insertFace f (f1,_,_) m = M.insert f1 new m
                   Just old -> f:old
                   Nothing -> [f]
 
-mapCoords (vs, ts, ns, fs) = map toCoord indexes
-    where indexes = concatMap (\(f1,f2,f3) -> [f1,f2,f3]) fs
+type Tri = (Coord,Coord,Coord)
+facesToTriangles :: [Face] -> [Tri]
+facesToTriangles = concatMap faceToTriangles
+faceToTriangles :: Face -> [Tri]
+faceToTriangles (c1,c2,c3,lis) = faceToTriangles' c1 c2 (c3:lis)
+    where faceToTriangles' a1 a2 [] = []
+          faceToTriangles' a1 a2 (a3:t) = (a1,a2,a3) : (faceToTriangles' a1 a3 t)
+
+mapCoords (vs, ts, ns, tris) = map toCoord indexes
+    where indexes = concatMap (\(f1,f2,f3) -> [f1,f2,f3]) tris
           toCoord (vertI,texI,normI) = (vs !! vertI,getNormal vertI normI,getTexture vertI texI)
           getNormal _ (Just i) = ns !! i
           getNormal i _ = fromMaybe (0:.0:.0:.()) $ M.lookup i normals
           getTexture _ (Just i) = ts !! i
           getTexture i _ = 0:.0:.()
-          normals = mapNormals vs fs
+          normals = mapNormals vs tris
 
 type GVertex = Vec3 (G.Vertex Float)
 type GFace = Vec3 (G.Vertex Float)
 type GTexture = Vec2 (G.Vertex Float)
 objToGPU:: String -> Either [CPU (GVertex, GFace, GTexture)] String
 objToGPU s = case parse s of
-               Ok p -> Left $ mapCoords p
+               Ok (vs,ts,ns,fs) -> Left $ mapCoords (vs,ts,ns,tris) 
+                   where tris = facesToTriangles fs
                Failed s -> Right s
