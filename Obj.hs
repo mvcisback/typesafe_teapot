@@ -45,9 +45,8 @@ mapCoords (vs, ts, ns, tris) = map toCoord indexes
           getTexture _ (Just i) = ts !! i
           getTexture i _ = u:.v:.()
               where (x:.y:.z:.()) = vs !! i
-                    u = atan2 (sign * y) (sign * x)
+                    u = atan2 y x 
                     v = z
-                    sign = signum y
           normals = mapNormals vs tris
 
 type GVertex = Vec3 (G.Vertex Float)
