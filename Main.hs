@@ -12,8 +12,7 @@ import Obj
 import System.IO    
 import System.Exit    
 import Graphics.UI.GLUT
-    (Window,
-    mainLoop,
+    (mainLoop,
     postRedisplay,
     idleCallback,
     getArgsAndInitialize,
@@ -43,9 +42,7 @@ transformedObj :: Float -> Vec2 Int -> TriangleStream3 -> TriangleStream4
 transformedObj angle size = fmap $ transform angle size
 
 rasterizedObj angle size = rasterizeFront . transformedObj angle size
-
 litObj texs angle size obj = enlight texs <$> rasterizedObj angle size obj
-
 objFrameBuffer texs angle size obj = paintSolid (litObj texs angle size obj) emptyFrameBuffer
 
 light = toGPU 0:.0:.1:.()
@@ -55,14 +52,14 @@ phong norm = ambient + specular + diffuse
     where diffuse = norm `dot` light
           ambient = toGPU 0.01
           specular = (view `dot` r) ** n
-              where r = (Vec.vec (2* (norm `dot` light))) * norm - light
+              where r = Vec.vec (2* (norm `dot` light)) * norm - light
                     n = 10
 
 enlight (tex, env) (norm, uv) = RGB $ color * Vec.vec (phong norm)
-    where color = texColor + envColor * (Vec.vec 0.5)
+    where color = texColor + envColor * Vec.vec 0.5
           RGB texColor = sample (Sampler Linear Mirror) tex uv
           RGB envColor = sample (Sampler Linear Clamp) env (x:.y:.())
-              where (x:.y:._:.()) = (toGPU 0.5)*(-norm + (Vec.vec 1))
+              where (x:.y:._:.()) = toGPU 0.5*(Vec.vec 1 - norm)
 
 transform angle (width:.height:.()) (pos, norm, uv) = (transformedPos, (transformedNorm, uv))
     where
