@@ -25,7 +25,7 @@ type TriangleStream4 = PrimitiveStream Triangle (Vec4 (Vertex Float), (Vec3 (Ver
 main :: IO ()
 main = do
   getArgsAndInitialize
-  tex <- loadTexture RGB8 "myPicture.jpg"
+  tex <- loadTexture RGB8 "texs/myPicture.jpg"
   angleRef <- newIORef 0.0
   obj <- getContents >>= (getObj . objToGPU)
   newWindow "Spinning box" (100:.100:.()) (800:.600:.()) 
