@@ -43,7 +43,11 @@ mapCoords (vs, ts, ns, tris) = map toCoord indexes
           getNormal _ (Just i) = ns !! i
           getNormal i _ = fromMaybe (0:.0:.0:.()) $ M.lookup i normals
           getTexture _ (Just i) = ts !! i
-          getTexture i _ = 0:.0:.()
+          getTexture i _ = u:.v:.()
+              where (x:.y:.z:.()) = vs !! i
+                    u = atan2 (sign * y) (sign * x)
+                    v = z
+                    sign = signum y
           normals = mapNormals vs tris
 
 type GVertex = Vec3 (G.Vertex Float)

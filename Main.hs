@@ -37,7 +37,7 @@ main = do
 
 renderFrame :: Texture2D RGBFormat -> IORef Float -> TriangleStream3 -> Vec2 Int -> IO (FrameBuffer RGBFormat DepthFormat ())
 renderFrame tex angleRef obj size = readIORef angleRef >>= nextFrame
-    where nextFrame angle = writeIORef angleRef ((angle + 0.005) `mod'` (2*pi))
+    where nextFrame angle = writeIORef angleRef ((angle + 0.05) `mod'` (2*pi))
                             >> return (objFrameBuffer tex angle size obj)
 initWindow :: Window -> IO ()
 initWindow win = idleCallback $= Just (postRedisplay (Just win))
