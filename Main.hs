@@ -37,7 +37,7 @@ main = do
             getObj (Right s) = print s >> exitFailure
 
 renderFrame tex env angleRef obj size = readIORef angleRef >>= nextFrame
-    where nextFrame angle = writeIORef angleRef ((angle + 0.05) `mod'` (2*pi))
+    where nextFrame angle = writeIORef angleRef ((angle + 0.00) `mod'` (2*pi))
                             >> return (objFrameBuffer tex env angle size obj)
 initWindow :: Window -> IO ()
 initWindow win = idleCallback $= Just (postRedisplay (Just win))
@@ -51,10 +51,11 @@ litObj tex env angle size obj = enlight tex env <$> rasterizedObj angle size obj
 
 objFrameBuffer tex env angle size obj = paintSolid (litObj tex env angle size obj) emptyFrameBuffer
 
-enlight tex env (norm, uv) = RGB $ c * Vec.vec (ambient + specular + diffuse) + c2*Vec.vec (specular + diffuse/2)
+enlight tex env (norm, uv) = RGB $ c * Vec.vec (ambient + specular + diffuse) + c2*Vec.vec (specular + diffuse)
     where RGB c = sample (Sampler Linear Wrap) tex uv
-          RGB c2 = sample (Sampler Linear Wrap) env (x:.y:.())
-          (x:.y:._:.()) = norm
+          RGB c2 = sample (Sampler Linear Clamp) env (x:.y:.())
+                   where
+                     (x:.y:._:.()) = (toGPU 0.5)*(-norm + (Vec.vec 1))
           light = toGPU 0:.0:.1:.()
           view = toGPU 0:.0:.1:.()
           diffuse = norm `dot` light
