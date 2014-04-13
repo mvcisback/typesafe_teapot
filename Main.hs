@@ -22,7 +22,6 @@ import Graphics.UI.GLUT
 type TriangleStream3 = PrimitiveStream Triangle (Vec3 (Vertex Float), Vec3 (Vertex Float), Vec2 (Vertex Float))
 type TriangleStream4 = PrimitiveStream Triangle (Vec4 (Vertex Float), (Vec3 (Vertex Float), Vec2 (Vertex Float)))
 
-main :: IO ()
 main = do
   getArgsAndInitialize
   tex <- loadTexture RGB8 "texs/myPicture.jpg" :: IO (Texture2D RGBFormat)
@@ -37,9 +36,8 @@ main = do
             getObj (Right s) = print s >> exitFailure
 
 renderFrame tex env angleRef obj size = readIORef angleRef >>= nextFrame
-    where nextFrame angle = writeIORef angleRef ((angle + 0.005) `mod'` (2*pi))
+    where nextFrame angle = writeIORef angleRef ((angle + 0.05) `mod'` (2*pi))
                             >> return (objFrameBuffer tex env angle size obj)
-initWindow :: Window -> IO ()
 initWindow win = idleCallback $= Just (postRedisplay (Just win))
 
 transformedObj :: Float -> Vec2 Int -> TriangleStream3 -> TriangleStream4
@@ -51,7 +49,7 @@ litObj tex env angle size obj = enlight tex env <$> rasterizedObj angle size obj
 
 objFrameBuffer tex env angle size obj = paintSolid (litObj tex env angle size obj) emptyFrameBuffer
 
-enlight tex env (norm, uv) = RGB $ c * Vec.vec (ambient + specular + diffuse) + c2*Vec.vec (specular + diffuse/100)
+enlight tex env (norm, uv) = RGB $ c * Vec.vec (ambient + specular + diffuse) + c2*Vec.vec (specular + diffuse/10)
     where RGB c = sample (Sampler Linear Mirror) tex uv
           RGB c2 = sample (Sampler Linear Clamp) env (x:.y:.())
                    where
