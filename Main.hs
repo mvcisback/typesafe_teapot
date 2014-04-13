@@ -25,20 +25,20 @@ type TriangleStream4 = PrimitiveStream Triangle (Vec4 (Vertex Float), (Vec3 (Ver
 main :: IO ()
 main = do
   getArgsAndInitialize
-  tex <- loadTexture RGB8 "texs/myPicture.jpg"
+  tex <- loadTexture RGB8 "texs/myPicture.jpg" :: IO (Texture2D RGBFormat)
+  env <- loadTexture RGB8 "envs/myEnv.jpg" :: IO (Texture2D RGBFormat)
   angleRef <- newIORef 0.0
   obj <- getContents >>= (getObj . objToGPU)
   newWindow "Spinning box" (100:.100:.()) (800:.600:.()) 
-       (renderFrame tex angleRef obj)
+       (renderFrame tex env angleRef obj)
        initWindow
   mainLoop
       where getObj (Left obj) = return $ toGPUStream TriangleList obj
             getObj (Right s) = print s >> exitFailure
 
-renderFrame :: Texture2D RGBFormat -> IORef Float -> TriangleStream3 -> Vec2 Int -> IO (FrameBuffer RGBFormat DepthFormat ())
-renderFrame tex angleRef obj size = readIORef angleRef >>= nextFrame
+renderFrame tex env angleRef obj size = readIORef angleRef >>= nextFrame
     where nextFrame angle = writeIORef angleRef ((angle + 0.05) `mod'` (2*pi))
-                            >> return (objFrameBuffer tex angle size obj)
+                            >> return (objFrameBuffer tex env angle size obj)
 initWindow :: Window -> IO ()
 initWindow win = idleCallback $= Just (postRedisplay (Just win))
 
@@ -47,12 +47,14 @@ transformedObj angle size = fmap $ transform angle size
 
 rasterizedObj angle size = rasterizeFront . transformedObj angle size
 
-litObj tex angle size obj = enlight tex <$> rasterizedObj angle size obj
+litObj tex env angle size obj = enlight tex env <$> rasterizedObj angle size obj
 
-objFrameBuffer tex angle size obj = paintSolid (litObj tex angle size obj) emptyFrameBuffer
+objFrameBuffer tex env angle size obj = paintSolid (litObj tex env angle size obj) emptyFrameBuffer
 
-enlight tex (norm, uv) = RGB $ c * Vec.vec (ambient + specular + diffuse)
+enlight tex env (norm, uv) = RGB $ (c + c2)* Vec.vec (ambient + specular + diffuse)
     where RGB c = sample (Sampler Linear Wrap) tex uv
+          RGB c2 = sample (Sampler Linear Wrap) env (x:.y:.())
+          (x:.y:._:.()) = norm
           light = toGPU 0:.0:.1:.()
           view = toGPU 0:.0:.1:.()
           diffuse = norm `dot` light
