@@ -46,8 +46,8 @@ main = execParser opts >>= render
     where
       opts = info (helper <*> optParser)
              ( fullDesc
-               <> progDesc "Print a greeting for TARGET"
-               <> header "hello - a test for optparse-applicative")
+               <> progDesc ""
+               <> header "")
 
 render (Opts texs envs bumps lighting)= do
   getArgsAndInitialize
