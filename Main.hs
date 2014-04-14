@@ -45,6 +45,7 @@ rasterizedObj angle size = rasterizeFront . transformedObj angle size
 litObj texs angle size obj = enlight texs <$> rasterizedObj angle size obj
 objFrameBuffer texs angle size obj = paintSolid (litObj texs angle size obj) emptyFrameBuffer
 
+-- This light source is at oo
 light = toGPU $ normalize (1:.1:.1:.())
 view = toGPU 0:.0:.1:.()
 
