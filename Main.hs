@@ -53,7 +53,7 @@ view = toGPU 0:.0:.1:.()
 phong norm = specular + ambient + diffuse
     where diffuse = maxB (norm `dot` light) 0 
           ambient = toGPU 0.1
-          specular = ifB (proj >* 0) ((abs $ view `dot` r) ** n) 0
+          specular = ifB (proj >* 0) (abs $ view `dot` r ** n) 0
               where r = Vec.vec (2* proj) * norm - light
                     proj = norm `dot` light
                     n = 40
@@ -62,29 +62,29 @@ seeliger norm = ifB (s ==* 0 &&* t ==* 0) 0 (s / (s + t))
     where s = maxB (norm `dot` light) 0
           t = maxB (norm `dot` view) 0
 
+bumpedNormal bumps norm@(nx:.ny:.nz:.()) uv@(u:.v:.()) = 
+    normalize $ norm - (dBdu * norm) `cross` dSdv + (dBdv * norm) `cross` dSdu
+    where 
+          bumpColor = sample (Sampler Linear Wrap) bumps
+          diffS dFda = dFda nx :. dFda ny :. dFda nz :.() 
+          diffB u2 v2 =  (b2 - b1) * Vec.vec (1/h)
+              where RGB b1 = bumpColor $ uv
+                    RGB b2 = bumpColor $ u2:.v2:.()
+          dBdu = diffB (u+h) v
+          dBdv = diffB u (v+h)
+          dSdv = diffS dFdx
+          dSdu = diffS dFdy
+          h = 0.01
+
+paintSolid = paintColorRastDepth Lequal True NoBlending (RGB $ Vec.vec True)
+emptyFrameBuffer = newFrameBufferColorDepth (RGB 0) 32
+
 enlight (tex,env,bumps) (norm,uv) = RGB $ color * Vec.vec (phong norm')
     where color = texColor + envColor * Vec.vec 0.5
           RGB texColor = sample (Sampler Linear Mirror) tex uv
           RGB envColor = sample (Sampler Linear Clamp) env (x:.y:.())
               where (x:.y:._:.()) = toGPU 0.5*(Vec.vec 1 - norm')
           norm' = bumpedNormal bumps norm uv
-
-bumpedNormal bumps norm@(nx:.ny:.nz:.()) uv@(u:.v:.()) = 
-    normalize $ norm - ((dBdu * norm) `cross` (dSdv) + (dBdv * norm) `cross` (dSdu))
-    where 
-          bumpColor = sample (Sampler Linear Wrap) bumps
-          dBdu = (b2 - b1) * Vec.vec (1/h)
-              where 
-                RGB b1 = bumpColor uv
-                RGB b2 = bumpColor $ (u+h):.v:.()
-                h = 0.01
-          dBdv = (b2 - b1) * Vec.vec (1/h)
-              where 
-                RGB b1 = bumpColor uv
-                RGB b2 = bumpColor $ (u):.(v+h):.()
-                h = 0.01
-          dSdv = ((dFdx nx):. (dFdx ny):. (dFdx nz):.())
-          dSdu = ((dFdy nx):. (dFdy ny):. (dFdy nz):.())
 
 transform angle (width:.height:.()) (pos, norm, uv) = (transformedPos, (transformedNorm, uv))
     where
@@ -94,6 +94,3 @@ transform angle (width:.height:.()) (pos, norm, uv) = (transformedPos, (transfor
         viewProjMat = projMat `multmm` viewMat
         transformedPos = toGPU (viewProjMat `multmm` modelMat) `multmv` (homPoint pos :: Vec4 (Vertex Float))
         transformedNorm = toGPU (Vec.map (Vec.take n3) $ Vec.take n3 modelMat) `multmv` norm
-
-paintSolid = paintColorRastDepth Lequal True NoBlending (RGB $ Vec.vec True)
-emptyFrameBuffer = newFrameBufferColorDepth (RGB 0) 32
