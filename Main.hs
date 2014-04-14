@@ -56,12 +56,12 @@ phong norm = specular + ambient + diffuse
                     proj = norm `dot` light
                     n = 40
 
-seeliger norm = s / (s + t)
-    where s = norm `dot` light
-          t = norm `dot` view
+seeliger norm = ifB (s ==* 0 &&* t ==* 0) 0 (s / (s + t))
+    where s = maxB (norm `dot` light) 0
+          t = maxB (norm `dot` view) 0
 
 enlight (tex, env) (norm, uv) = RGB $ color * Vec.vec (phong norm)
-    where color = texColor + envColor * Vec.vec 0.1
+    where color = texColor + envColor * Vec.vec 0.01
           RGB texColor = sample (Sampler Linear Mirror) tex uv
           RGB envColor = sample (Sampler Linear Clamp) env (x:.y:.())
               where (x:.y:._:.()) = toGPU 0.5*(Vec.vec 1 - norm)
