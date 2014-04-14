@@ -32,7 +32,7 @@ main = do
             getObj (Right s) = print s >> exitFailure
 
 renderFrame texs angleRef obj size = readIORef angleRef >>= nextFrame
-    where nextFrame angle = writeIORef angleRef ((angle + 0.05) `mod'` (2*pi))
+    where nextFrame angle = writeIORef angleRef ((angle + 0.005) `mod'` (2*pi))
                             >> return (objFrameBuffer texs angle size obj)
 initWindow win = idleCallback $= Just (postRedisplay (Just win))
 
@@ -45,22 +45,23 @@ rasterizedObj angle size = rasterizeFront . transformedObj angle size
 litObj texs angle size obj = enlight texs <$> rasterizedObj angle size obj
 objFrameBuffer texs angle size obj = paintSolid (litObj texs angle size obj) emptyFrameBuffer
 
-light = toGPU 0:.0:.1:.()
+light = toGPU $ normalize (1:.1:.1:.())
 view = toGPU 0:.0:.1:.()
 
-phong norm = ambient + specular + diffuse
+phong norm = specular + ambient + diffuse
     where diffuse = norm `dot` light
-          ambient = toGPU 0.01
-          specular = (view `dot` r) ** n
-              where r = Vec.vec (2* (norm `dot` light)) * norm - light
-                    n = 10
+          ambient = toGPU 0.1
+          specular = ifB (proj >* 0) ((abs $ view `dot` r) ** n) 0
+              where r = Vec.vec (2* proj) * norm - light
+                    proj = norm `dot` light
+                    n = 40
 
 seeliger norm = s / (s + t)
     where s = norm `dot` light
           t = norm `dot` view
 
 enlight (tex, env) (norm, uv) = RGB $ color * Vec.vec (phong norm)
-    where color = texColor + envColor * Vec.vec 0.5
+    where color = texColor + envColor * Vec.vec 0.1
           RGB texColor = sample (Sampler Linear Mirror) tex uv
           RGB envColor = sample (Sampler Linear Clamp) env (x:.y:.())
               where (x:.y:._:.()) = toGPU 0.5*(Vec.vec 1 - norm)
