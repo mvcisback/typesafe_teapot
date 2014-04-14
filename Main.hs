@@ -22,10 +22,11 @@ main = do
   getArgsAndInitialize
   tex <- loadTexture RGB8 "texs/myPicture.jpg" :: IO (Texture2D RGBFormat)
   env <- loadTexture RGB8 "envs/myEnv.jpg" :: IO (Texture2D RGBFormat)
+  bumps <- loadTexture RGB8 "bumps/myBumps.jpg" :: IO (Texture2D RGBFormat)
   angleRef <- newIORef 0.0
   obj <- getContents >>= (getObj . objToGPU)
   newWindow "Spinning box" (100:.100:.()) (800:.600:.()) 
-       (renderFrame (tex,env) angleRef obj)
+       (renderFrame (tex,env,bumps) angleRef obj)
        initWindow
   mainLoop
       where getObj (Left obj) = return $ toGPUStream TriangleList obj
@@ -61,11 +62,29 @@ seeliger norm = ifB (s ==* 0 &&* t ==* 0) 0 (s / (s + t))
     where s = maxB (norm `dot` light) 0
           t = maxB (norm `dot` view) 0
 
-enlight (tex, env) (norm,uv) = RGB $ color * Vec.vec (phong norm)
+enlight (tex,env,bumps) (norm,uv) = RGB $ color * Vec.vec (phong norm')
     where color = texColor + envColor * Vec.vec 0.5
           RGB texColor = sample (Sampler Linear Mirror) tex uv
           RGB envColor = sample (Sampler Linear Clamp) env (x:.y:.())
-              where (x:.y:._:.()) = toGPU 0.5*(Vec.vec 1 - norm)
+              where (x:.y:._:.()) = toGPU 0.5*(Vec.vec 1 - norm')
+          norm' = bumpedNormal bumps norm uv
+
+bumpedNormal bumps norm@(nx:.ny:.nz:.()) uv@(u:.v:.()) = 
+    normalize $ norm - ((dBdu * norm) `cross` (dSdv) + (dBdv * norm) `cross` (dSdu))
+    where 
+          bumpColor = sample (Sampler Linear Wrap) bumps
+          dBdu = (b2 - b1) * Vec.vec (1/h)
+              where 
+                RGB b1 = bumpColor uv
+                RGB b2 = bumpColor $ (u+h):.v:.()
+                h = 0.01
+          dBdv = (b2 - b1) * Vec.vec (1/h)
+              where 
+                RGB b1 = bumpColor uv
+                RGB b2 = bumpColor $ (u):.(v+h):.()
+                h = 0.01
+          dSdv = ((dFdx nx):. (dFdx ny):. (dFdx nz):.())
+          dSdu = ((dFdy nx):. (dFdy ny):. (dFdy nz):.())
 
 transform angle (width:.height:.()) (pos, norm, uv) = (transformedPos, (transformedNorm, uv))
     where
