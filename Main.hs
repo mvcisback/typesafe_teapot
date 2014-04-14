@@ -37,8 +37,7 @@ renderFrame texs angleRef obj size = readIORef angleRef >>= nextFrame
 initWindow win = idleCallback $= Just (postRedisplay (Just win))
 
 type TriangleStream = PrimitiveStream Triangle (Vec3 (Vertex Float), Vec3 (Vertex Float), Vec2 (Vertex Float))
-type TriangleStream' = PrimitiveStream Triangle 
-    (Vec4 (Vertex Float),(Vec4 (Vertex Float),Vec3 (Vertex Float),Vec2 (Vertex Float)))
+type TriangleStream' = PrimitiveStream Triangle (Vec4 (Vertex Float),(Vec3 (Vertex Float),Vec2 (Vertex Float)))
 transformedObj :: Float -> Vec2 Int -> TriangleStream -> TriangleStream'
 transformedObj angle size = fmap $ transform angle size
 
@@ -61,13 +60,13 @@ seeliger norm = ifB (s ==* 0 &&* t ==* 0) 0 (s / (s + t))
     where s = maxB (norm `dot` light) 0
           t = maxB (norm `dot` view) 0
 
-enlight (tex, env) (pos,norm,uv) = RGB $ color * Vec.vec (phong norm)
+enlight (tex, env) (norm,uv) = RGB $ color * Vec.vec (phong norm)
     where color = texColor + envColor * Vec.vec 0.5
           RGB texColor = sample (Sampler Linear Mirror) tex uv
           RGB envColor = sample (Sampler Linear Clamp) env (x:.y:.())
               where (x:.y:._:.()) = toGPU 0.5*(Vec.vec 1 - norm)
 
-transform angle (width:.height:.()) (pos, norm, uv) = (transformedPos, (transformedPos, transformedNorm, uv))
+transform angle (width:.height:.()) (pos, norm, uv) = (transformedPos, (transformedNorm, uv))
     where
         modelMat = rotationVec (normalize (1:.0.5:.0.3:.())) angle `multmm` translation (-0.5)
         viewMat = translation (-(0:.0:.5:.()))
