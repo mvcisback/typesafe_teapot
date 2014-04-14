@@ -17,12 +17,43 @@ import Graphics.UI.GLUT
     idleCallback,
     getArgsAndInitialize,
     ($=))
+import Options.Applicative
 
-main = do
+data Opts = Opts
+  { texs :: FilePath
+  , envs :: FilePath
+  , bumps :: FilePath
+  , seeligerFlag :: Bool}
+
+optParser :: Parser Opts
+optParser = Opts
+         <$> strOption
+         ( long "texture"
+           <> short 't'
+           <> metavar "TEXTURE")
+         <*> strOption
+         ( long "envs"
+           <> short 'e'
+           <> metavar "ENVIRONMENT")
+         <*> strOption
+         ( long "bumps"
+           <> short 'b'
+           <> metavar "BUMP_MAP")
+         <*> switch
+         ( long "seeliger")
+
+main = execParser opts >>= render
+    where
+      opts = info (helper <*> optParser)
+             ( fullDesc
+               <> progDesc "Print a greeting for TARGET"
+               <> header "hello - a test for optparse-applicative")
+
+render (Opts texs envs bumps lighting)= do
   getArgsAndInitialize
-  tex <- loadTexture RGB8 "texs/myPicture.jpg" :: IO (Texture2D RGBFormat)
-  env <- loadTexture RGB8 "envs/myEnv.jpg" :: IO (Texture2D RGBFormat)
-  bumps <- loadTexture RGB8 "bumps/myBumps.jpg" :: IO (Texture2D RGBFormat)
+  tex <- loadTexture RGB8 texs :: IO (Texture2D RGBFormat)
+  env <- loadTexture RGB8 envs :: IO (Texture2D RGBFormat)
+  bumps <- loadTexture RGB8 bumps :: IO (Texture2D RGBFormat)
   angleRef <- newIORef 0.0
   obj <- getContents >>= (getObj . objToGPU)
   newWindow "Spinning box" (100:.100:.()) (800:.600:.()) 
@@ -79,7 +110,7 @@ bumpedNormal bumps norm@(nx:.ny:.nz:.()) uv@(u:.v:.()) =
 paintSolid = paintColorRastDepth Lequal True NoBlending (RGB $ Vec.vec True)
 emptyFrameBuffer = newFrameBufferColorDepth (RGB 0) 32
 
-enlight (tex,env,bumps) (norm,uv) = RGB $ color * Vec.vec (phong norm')
+enlight (tex,env,bumps) (norm,uv) = RGB $ color * Vec.vec (seeliger norm')
     where color = texColor + envColor * Vec.vec 0.5
           RGB texColor = sample (Sampler Linear Mirror) tex uv
           RGB envColor = sample (Sampler Linear Clamp) env (x:.y:.())
