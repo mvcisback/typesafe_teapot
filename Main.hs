@@ -50,7 +50,7 @@ light = toGPU $ normalize (1:.1:.1:.())
 view = toGPU 0:.0:.1:.()
 
 phong norm = specular + ambient + diffuse
-    where diffuse = norm `dot` light
+    where diffuse = maxB (norm `dot` light) 0 
           ambient = toGPU 0.1
           specular = ifB (proj >* 0) ((abs $ view `dot` r) ** n) 0
               where r = Vec.vec (2* proj) * norm - light
