@@ -56,8 +56,8 @@ phong norm = ambient + specular + diffuse
                     n = 10
 
 seeliger norm = s / (s + t)
-                where s = norm `dot` light
-                      t = norm `dot` view
+    where s = norm `dot` light
+          t = norm `dot` view
 
 enlight (tex, env) (norm, uv) = RGB $ color * Vec.vec (phong norm)
     where color = texColor + envColor * Vec.vec 0.5

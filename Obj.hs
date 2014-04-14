@@ -10,7 +10,7 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Map as M
 
 getCoords verts (f1, f2, f3) = (getVert' f1, getVert' f2, getVert' f3)
-    where getVert' (faceI,_,_)= (verts !! faceI)
+    where getVert' (faceI,_,_)= verts !! faceI
 
 computeNormal :: (Vec3 Float, Vec3 Float, Vec3 Float) -> Vec3 Float
 computeNormal (v1, v2, v3) = normalize $ (v2-v1) `cross` (v3-v2)
@@ -35,7 +35,7 @@ facesToTriangles = concatMap faceToTriangles
 faceToTriangles :: Face -> [Tri]
 faceToTriangles (c1,c2,c3,lis) = faceToTriangles' c1 c2 (c3:lis)
     where faceToTriangles' a1 a2 [] = []
-          faceToTriangles' a1 a2 (a3:t) = (a1,a2,a3) : (faceToTriangles' a1 a3 t)
+          faceToTriangles' a1 a2 (a3:t) = (a1,a2,a3) : faceToTriangles' a1 a3 t
 
 mapCoords (vs, ts, ns, tris) = map toCoord indexes
     where indexes = concatMap (\(f1,f2,f3) -> [f1,f2,f3]) tris
