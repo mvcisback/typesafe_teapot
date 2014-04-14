@@ -65,7 +65,7 @@ render (Opts texs envs bumps lighting)= do
 
 renderFrame texs angleRef obj size = readIORef angleRef >>= nextFrame
     where nextFrame angle = writeIORef angleRef ((angle + 0.005) `mod'` (2*pi))
-                            >> return (objFrameBuffer texs angle size obj)
+                            >> return (objFrameBuffer (enlight seeliger) texs angle size obj)
 initWindow win = idleCallback $= Just (postRedisplay (Just win))
 
 type TriangleStream = PrimitiveStream Triangle (Vec3 (Vertex Float), Vec3 (Vertex Float), Vec2 (Vertex Float))
@@ -74,14 +74,14 @@ transformedObj :: Float -> Vec2 Int -> TriangleStream -> TriangleStream'
 transformedObj angle size = fmap $ transform angle size
 
 rasterizedObj angle size = rasterizeFront . transformedObj angle size
-litObj texs angle size obj = enlight texs <$> rasterizedObj angle size obj
-objFrameBuffer texs angle size obj = paintSolid (litObj texs angle size obj) emptyFrameBuffer
+litObj enlight texs angle size obj = enlight texs <$> rasterizedObj angle size obj
+objFrameBuffer enlight texs angle size obj = paintSolid (litObj enlight texs angle size obj) emptyFrameBuffer
 
 -- This light source is at oo
 light = toGPU $ normalize (1:.1:.1:.())
 view = toGPU 0:.0:.1:.()
 
-phong norm = specular + ambient + diffuse
+phong norm (texColor,envColor) = RGB $ (texColor+envColor)*Vec.vec (specular + ambient + diffuse)
     where diffuse = maxB (norm `dot` light) 0 
           ambient = toGPU 0.1
           specular = ifB (proj >* 0) (abs $ view `dot` r ** n) 0
@@ -89,7 +89,7 @@ phong norm = specular + ambient + diffuse
                     proj = norm `dot` light
                     n = 40
 
-seeliger norm = ifB (s ==* 0 &&* t ==* 0) 0 (s / (s + t))
+seeliger norm (color,_) = RGB $ color * Vec.vec (ifB (s ==* 0 &&* t ==* 0) 0 (s / (s + t)))
     where s = maxB (norm `dot` light) 0
           t = maxB (norm `dot` view) 0
 
@@ -110,7 +110,7 @@ bumpedNormal bumps norm@(nx:.ny:.nz:.()) uv@(u:.v:.()) =
 paintSolid = paintColorRastDepth Lequal True NoBlending (RGB $ Vec.vec True)
 emptyFrameBuffer = newFrameBufferColorDepth (RGB 0) 32
 
-enlight (tex,env,bumps) (norm,uv) = RGB $ color * Vec.vec (seeliger norm')
+enlight lighting (tex,env,bumps) (norm,uv) = lighting norm' (texColor,envColor)
     where color = texColor + envColor * Vec.vec 0.5
           RGB texColor = sample (Sampler Linear Mirror) tex uv
           RGB envColor = sample (Sampler Linear Clamp) env (x:.y:.())
