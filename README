@@ -3,6 +3,8 @@ author: Marcell Vazquez-Chanlatter
 
 3 credit hours
 
+video: https://www.youtube.com/watch?v=ItZbiPuhPlw&feature=youtu.be
+
 Language: Haskell
 
 Libraries:
@@ -21,6 +23,11 @@ About GPipe:
 - GPipe is an purely functiona, staticly typed _alternative_ to OpenGL.
 - It does not include many of the built in features such as texture mapping, lighting, or world transformations.
 - I wrote almost ALL the features as shaders
+
+Usage:
+- Expects an Obj file to come in from stdin (I was originally gonna write an obj synthesis program for combining objects....but got sick)
+- All other options can be seen by using --help
+
 
 For example: A lighting shader and transformation shader
     seeliger norm (color,_) = RGB $ color * Vec.vec (ifB (s ==* 0 &&* t ==* 0) 0 (s / (s + t)))
