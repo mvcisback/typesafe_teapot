@@ -34,7 +34,7 @@ render texs envs bumps lightingFlag = do
             lighting = if lightingFlag then seeliger else phong
 
 renderFrame texs lighting angleRef obj size = readIORef angleRef >>= nextFrame
-    where nextFrame angle = writeIORef angleRef ((angle + 0.005) `mod'` (2*pi))
+    where nextFrame angle = writeIORef angleRef ((angle + 0.001) `mod'` (2*pi))
                             >> return (objFrameBuffer (enlight lighting) texs angle size obj)
 initWindow win = idleCallback $= Just (postRedisplay (Just win))
 
