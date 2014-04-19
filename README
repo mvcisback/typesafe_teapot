@@ -1,64 +1,33 @@
-MP3:
-author: Marcell Vazquez-Chanlatte
+# Typesafe_teapot #
 
-3 credit hours
+# About #
+see: [http://mvcisback.github.io/posts/2014-04-15-teapot.html](http://mvcisback.github.io/posts/2014-04-15-teapot.html) 
 
-video: https://www.youtube.com/watch?v=ItZbiPuhPlw&feature=youtu.be
-screenshots: in the screenshots dir
+# Build Instructions #
+1. install alex and happy
+2. Generate Lexer
+  $ alex Tokens.x
+3. Generate Parser
+  $ happy Parser.y
+4. Install Dependencies
+  $ cabal install --only-dependencies
+  - Note, I needed to grab GPipe 1.4 from github (since its not on hackage) to get this to build
+5. Test
+  $ cat objs/teapot_0.obj| runhaskell Main.hs -t texs/metal.jpg -e envs/grace_probe.jpg -b bumps/noBump.png
 
-Language: Haskell
+# Relevent Files #
+- Main.hs: option parser
+- Render.hs: renderer
+- Objs.hs: Obj -> Triangle Stream
+- Parser.y: Grammar for Obj
+- Tokens.x: Tokens for Parser
 
-Libraries:
-see mp3.cabal
-
-Build Instructions:
-After acquiring all the dependencies listed in mp3.cabal
-Generate Lexer
-$ alex Tokens.x
-Generate Parser
-$ happy Parser.y
-Build Renderer
-$ ghc Main.hs -o mp3
-
-About GPipe:
-- GPipe is an purely functiona, staticly typed _alternative_ to OpenGL.
-- It does not include many of the built in features such as texture mapping, lighting, or world transformations.
-- I wrote almost ALL the features as shaders
-
-Usage:
-- Expects an Obj file to come in from stdin (I was originally gonna write an obj synthesis program for combining objects....but got sick)
-- All other options can be seen by using --help
-
-
-For example: A lighting shader and transformation shader
-    seeliger norm (color,_) = RGB $ color * Vec.vec (ifB (s ==* 0 &&* t ==* 0) 0 (s / (s + t)))
-             where s = maxB (norm `dot` light) 0
-                   t = maxB (norm `dot` view) 0
-
-    transform angle (width:.height:.()) (pos, norm, uv) = (transformedPos, (transformedNorm, uv))
-        where
-            modelMat = rotationVec (normalize (1:.0.5:.0.3:.())) angle `multmm` translation (-0.5)
-            viewMat = translation (-(0:.0:.5:.()))
-            projMat = perspective 1 100 (pi/3) (fromIntegral width / fromIntegral height)
-            viewProjMat = projMat `multmm` viewMat
-            transformedPos = toGPU (viewProjMat `multmm` modelMat) `multmv` (homPoint pos :: Vec4 (Vertex Float))
-            transformedNorm = toGPU (Vec.map (Vec.take n3) $ Vec.take n3 modelMat) `multmv` norm
-
-Relevent Files:
-Main.hs: option parser
-Render.hs: renderer
-Objs.hs: Obj -> Triangle Stream
-Parser.y: Grammar for Obj
-Tokens.x: Tokens for Parser
-
-Features:
-- perspective,
+# Features: #
+- perspective
 - hidden surfaces (via the z-buffer),
-- shading using the Phong surface reflection model,
+- shading using the Phong surface reflection model
 - texture mapping
 - environment mapping.
-
-Bonus Features:
 - Seeliger lighting model
 - Bump mapping
 - general obj parsing
