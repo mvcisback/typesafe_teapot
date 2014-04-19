@@ -6,17 +6,23 @@ see: [http://mvcisback.github.io/posts/2014-04-15-teapot.html](http://mvcisback.
 # Build Instructions #
 1. install alex and happy
 2. Generate Lexer
+
   $ alex Tokens.x
+  
 3. Generate Parser
+
   $ happy Parser.y
+  
 4. Install Dependencies
+
   - $ cabal configure
   - $ cabal install
   - $ cabal build
-  - $ cat objs/teapot_0.obj| typesafe_teapot -t texs/metal.jpg -e envs/grace_probe.jpg -b bumps/noBump.png
   - Note, I needed to grab GPipe 1.4 from github (since its not on hackage) to get this to build
+  
 5. Test
 
+  - $ cat objs/teapot_0.obj| typesafe_teapot -t texs/metal.jpg -e envs/grace_probe.jpg -b bumps/noBump.png
 
 
 # Relevent Files #
