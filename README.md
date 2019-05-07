@@ -1,8 +1,5 @@
 # Typesafe_teapot #
 
-# About #
-see: [http://mvcisback.github.io/posts/2014-04-15-teapot.html](http://mvcisback.github.io/posts/2014-04-15-teapot.html) 
-
 # Build Instructions #
 1. install alex and happy
 2. Generate Lexer
